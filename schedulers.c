@@ -6,12 +6,20 @@
 #include <string.h>
 #include "scheduling.h"
 #include "schedulers.h"
+#include "queue.h"
 
 void set_task_state(struct Task *task, enum taskState taskNewState)
 {
     pthread_mutex_lock(&taskStateMutex);
     task->state = taskNewState;
     pthread_mutex_unlock(&taskStateMutex);
+}
+enum taskState read_task_state(struct Task *task){
+    pthread_mutex_lock(&taskStateMutex);
+    enum taskState state = task->state;
+    pthread_mutex_unlock(&taskStateMutex);
+
+    return state;
 }
 
 void wait_for_rescheduling(int quantum, struct Task *task)
@@ -73,7 +81,37 @@ void round_robin(struct Task **tasks, int taskCount, int timeout, int quantum)
 // Implement your schedulers here!
 void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 {
-    // Implement your solution here
+    // gives the cpu to the task that has been in the ready queue the longest and lets it run till its finished. non-preemptive
+    int taskIndex = 0;
+    Queue *ready_queue = queue_create();
+
+    int currently_running_index = NULL;
+
+    do
+    {
+        struct Node* current = ready_queue->front; 
+    
+        // Traverse until the end of the queue
+        while (current != NULL) {
+            if (current->data == target) {
+                return true; // Target found
+            }
+            current = current->next; // Move to the next node
+        }
+
+        if(tasks[taskIndex]->arrivalTime < globalTime && (tasks[taskIndex]->state != finished || tasks[taskIndex]-> state != running)){
+            queue_enqueue(ready_queue,taskIndex);
+            set_task_state(task[taskIndex],preempted);
+        }
+        int task_running_index = queue_dequeue(ready_queue);
+
+        set_task_state(tasks[task_running_index], running);
+
+
+    } while (globalTime < timeout);
+
+
+
 }
 void shortest_process_next(struct Task **tasks, int taskCount, int timeout)
 {
