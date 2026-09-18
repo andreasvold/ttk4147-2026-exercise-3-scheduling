@@ -80,29 +80,37 @@ void round_robin(struct Task **tasks, int taskCount, int timeout, int quantum)
 // Implement your schedulers here!
 void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 {
-    // gives the cpu to the task that has been in the ready queue the longest and lets it run till its finished. non-preemptive
-    int taskIndex = 0;
     int task_running_index = -1;
 
-    do
+do
+{
+    int task_current_lowest_arrtime = 10000000;
+
+    if (task_running_index >= 0 && tasks[task_running_index] != NULL && tasks[task_running_index]->state == running)
     {
-        int task_lowest_arrivaltime = 10000000;
-        if (task_running_index >= && tasks[task_running_index]->state == running){
-            continue;
-        }
-        else{
-            for(int i = 0; i< 4; i++){
-                if(tasks[i]->arrivalTime < globalTime && tasks[i]->state != finished && tasks[i]->arrivaltime <= tasks[task_current_lowest_arrtime]->arrivalTime){
+        continue;
+    }
+    else
+    {
+        for (int i = 0; i < 4; i++)
+        {
+            if (tasks[i] != NULL && tasks[i]->arrivalTime < globalTime && tasks[i]->state != finished)
+            {
+                if (task_current_lowest_arrtime == 10000000 || tasks[i]->arrivalTime <= tasks[task_current_lowest_arrtime]->arrivalTime)
+                {
                     task_current_lowest_arrtime = i;
                 }
             }
-            if (task_current_lowest_arrtime != 10000000){
-                task_running_index = task_current_lowest_arrtime;
-                set_task_state(tasks[task_running_index], running);
-            }
-
         }
-    } while (globalTime < timeout);
+
+        if (task_current_lowest_arrtime != 10000000)
+        {
+            task_running_index = task_current_lowest_arrtime;
+            set_task_state(tasks[task_running_index], running);
+        }
+    }
+
+} while (globalTime < timeout);
 
 
 
