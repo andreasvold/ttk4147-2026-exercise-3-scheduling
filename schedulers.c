@@ -6,7 +6,6 @@
 #include <string.h>
 #include "scheduling.h"
 #include "schedulers.h"
-#include "queue.h"
 
 void set_task_state(struct Task *task, enum taskState taskNewState)
 {
@@ -83,31 +82,26 @@ void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 {
     // gives the cpu to the task that has been in the ready queue the longest and lets it run till its finished. non-preemptive
     int taskIndex = 0;
-    Queue *ready_queue = queue_create();
-
-    int currently_running_index = NULL;
+    int task_running_index = -1;
 
     do
     {
-        struct Node* current = ready_queue->front; 
-    
-        // Traverse until the end of the queue
-        while (current != NULL) {
-            if (current->data == target) {
-                return true; // Target found
+        int task_lowest_arrivaltime = 10000000;
+        if (task_running_index >= && tasks[task_running_index]->state == running){
+            continue;
+        }
+        else{
+            for(int i = 0; i< 4; i++){
+                if(tasks[i]->arrivalTime < globalTime && tasks[i]->state != finished && tasks[i]->arrivaltime <= tasks[task_current_lowest_arrtime]->arrivalTime){
+                    task_current_lowest_arrtime = i;
+                }
             }
-            current = current->next; // Move to the next node
+            if (task_current_lowest_arrtime != 10000000){
+                task_running_index = task_current_lowest_arrtime;
+                set_task_state(tasks[task_running_index], running);
+            }
+
         }
-
-        if(tasks[taskIndex]->arrivalTime < globalTime && (tasks[taskIndex]->state != finished || tasks[taskIndex]-> state != running)){
-            queue_enqueue(ready_queue,taskIndex);
-            set_task_state(task[taskIndex],preempted);
-        }
-        int task_running_index = queue_dequeue(ready_queue);
-
-        set_task_state(tasks[task_running_index], running);
-
-
     } while (globalTime < timeout);
 
 
