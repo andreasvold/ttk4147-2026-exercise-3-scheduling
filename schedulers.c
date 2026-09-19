@@ -97,7 +97,6 @@ void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
             }
 
         }
-        // choose task to run from queue
         if(min_taskindex != -1){
             // Set the task state to running
             if (tasks[min_taskindex]->startTime == -1){
