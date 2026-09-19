@@ -44,6 +44,7 @@ void wait_for_rescheduling(int quantum, struct Task *task)
 void round_robin(struct Task **tasks, int taskCount, int timeout, int quantum)
 {
     int taskIndex = 0;
+    int num_tasks = 0;
 
     do
     {
@@ -80,38 +81,45 @@ void round_robin(struct Task **tasks, int taskCount, int timeout, int quantum)
 // Implement your schedulers here!
 void first_come_first_served(struct Task **tasks, int taskCount, int timeout)
 {
-    int task_running_index = -1;
 
-do
-{
-    int task_current_lowest_arrtime = 10000000;
+    do
+    {
+        // find next task to run
+        int min_arrivaltime = 1000000;
+        int min_taskindex = -1;
 
-    if (task_running_index >= 0 && tasks[task_running_index] != NULL && tasks[task_running_index]->state == running)
-    {
-        continue;
-    }
-    else
-    {
-        for (int i = 0; i < 4; i++)
-        {
-            if (tasks[i] != NULL && tasks[i]->arrivalTime < globalTime && tasks[i]->state != finished)
-            {
-                if (task_current_lowest_arrtime == 10000000 || tasks[i]->arrivalTime <= tasks[task_current_lowest_arrtime]->arrivalTime)
-                {
-                    task_current_lowest_arrtime = i;
+        for(int i = 0; i<taskCount; i++){
+            if (tasks[i]->arrivalTime <= globalTime && tasks[i]->state != finished){
+                if (tasks[i]->arrivalTime < min_arrivaltime){
+                    min_arrivaltime = tasks[i]->arrivalTime;
+                    min_taskindex = i;
                 }
             }
+
+        }
+        // choose task to run from queue
+        if(min_taskindex != -1){
+            // Set the task state to running
+            if (tasks[min_taskindex]->startTime == -1){
+                tasks[min_taskindex]->startTime = globalTime;
+                set_task_state(tasks[min_taskindex], running);
+                do
+            {
+                pthread_mutex_lock(&timeMutex);
+                pthread_cond_wait(&timeCond, &timeMutex);
+                pthread_mutex_unlock(&timeMutex);
+
+            } while (tasks[min_taskindex]->state != finished);
+            }
+        }
+        else {
+            // wait for the global clock/time condition to update.
+            pthread_mutex_lock(&timeMutex);
+            pthread_cond_wait(&timeCond, &timeMutex);
+            pthread_mutex_unlock(&timeMutex);
         }
 
-        if (task_current_lowest_arrtime != 10000000)
-        {
-            task_running_index = task_current_lowest_arrtime;
-            set_task_state(tasks[task_running_index], running);
-        }
-    }
-
-} while (globalTime < timeout);
-
+    } while (globalTime < timeout);
 
 
 }
